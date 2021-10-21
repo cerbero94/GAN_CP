@@ -1,0 +1,27 @@
+------------ Options -------------
+D_lr: 0.03
+Epsilon: 10
+G_lr: 0.003
+Lambda: 0.1
+batchsize: 24
+dataset: BH_256_BKT
+dataset_type: ES_1D
+device: cpu
+display: False
+isTrain: False
+isize: 64
+iter: 0
+model: gan_es_1D
+name: paper/BH_256_BKT
+ndf: 64
+ngf: 64
+niter: 250
+outf: ./output
+phase: train
+print_freq: 50
+resume: 
+tr_thr: 0.001
+training_reg: [0.0, 2.5]
+val_thr: 0.015
+validation_reg: [2.5, 3.0]
+-------------- End ----------------
