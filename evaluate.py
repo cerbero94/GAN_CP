@@ -1,15 +1,8 @@
 """
-TRAIN GANOMALY
+EVALUATE 
 
 . Example: Run the following command from the terminal.
-    run train.py                             \
-        --model ganomaly                        \
-        --dataset UCSD_Anomaly_Dataset/UCSDped1 \
-        --batchsize 32                          \
-        --isize 256                         \
-        --nz 512                                \
-        --ngf 64                               \
-        --ndf 64
+    
 """
 
 
@@ -19,7 +12,6 @@ from __future__ import print_function
 
 from options import Options
 from torch.utils.data import DataLoader, random_split, Dataset
-from lib.functions_classes_torch import *
 
 from lib.data import load_data
 from lib.model import GAN_ES_1D 
@@ -32,6 +24,7 @@ def evaluate():
     ##
     # ARGUMENTS
     opt = Options().parse()
+    opt.isTrain = False
 
     ##
     # LOAD DATA
@@ -40,6 +33,7 @@ def evaluate():
     ##
     # LOAD MODEL
     model = GAN_ES_1D(opt, dataloader)
+    model.load_weights()
 
     ##
     # TEST MODEL

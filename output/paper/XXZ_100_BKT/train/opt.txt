@@ -1,27 +1,28 @@
 ------------ Options -------------
-D_lr: 0.03
+D_lr: 1e-05
 Epsilon: 10
-G_lr: 0.003
+G_lr: 0.001
 Lambda: 0.1
 batchsize: 24
-dataset: XXZ_100_BKT
+dataset: XXZ_100_BKT_new
 dataset_type: ES_1D
 device: cpu
 display: False
 isTrain: False
 isize: 64
 iter: 0
-model: gan_es_1D
-name: paper/XXZ_100_BKT
+model: gan_es_1d
+name: gan_es_1d/XXZ_100_BKT_new
 ndf: 64
 ngf: 64
-niter: 250
+niter: 400
 outf: ./output
 phase: train
-print_freq: 50
 resume: 
-tr_thr: 0.001
-training_reg: [0.0, -0.7]
-val_thr: 0.015
-validation_reg: [-0.7, -0.8]
+tr_thr: 0.0005
+training_reg: [0.0, -0.65]
+val_thr: 0.005
+validation_reg: [-0.65, -0.8]
+wandb_account: cerbero94
+wandb_proj: gan
 -------------- End ----------------

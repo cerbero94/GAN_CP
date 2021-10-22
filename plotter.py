@@ -1,8 +1,6 @@
 #%%
 import numpy as np
 import pandas as pd
-import os
-os.environ["PATH"] += os.pathsep + '/usr/local/texlive/2021/bin/x86_64-darwin'
 import matplotlib.pyplot as plt
 from matplotlib import rc
 rc('text', usetex=True)

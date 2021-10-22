@@ -7,7 +7,7 @@ batchsize: 24
 dataset: BH2S_96_BKT
 dataset_type: ES_1D
 device: cpu
-display: False
+display: True
 isTrain: False
 isize: 60
 iter: 0
@@ -18,10 +18,11 @@ ngf: 64
 niter: 250
 outf: ./output
 phase: train
-print_freq: 50
 resume: 
 tr_thr: 0.001
 training_reg: [0.0, -1.0]
 val_thr: 0.015
 validation_reg: [-0.99, -1.6]
+wandb_account: your_wandb_account
+wandb_proj: your_wandb_project
 -------------- End ----------------

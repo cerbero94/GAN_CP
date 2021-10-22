@@ -7,21 +7,22 @@ batchsize: 24
 dataset: BH_256_BKT
 dataset_type: ES_1D
 device: cpu
-display: False
+display: True
 isTrain: False
 isize: 64
 iter: 0
-model: gan_es_1D
+model: gan_es_1d
 name: paper/BH_256_BKT
 ndf: 64
 ngf: 64
 niter: 250
 outf: ./output
 phase: train
-print_freq: 50
-resume: 
+resume: output/paper/BH_128_BKT/train/weights/
 tr_thr: 0.001
 training_reg: [0.0, 2.5]
 val_thr: 0.015
 validation_reg: [2.5, 3.0]
+wandb_account: cerbero94
+wandb_proj: gan
 -------------- End ----------------

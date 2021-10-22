@@ -34,17 +34,18 @@ def custom_collate(dictionary):
 ##
 def load_data(opt):
     if opt.dataset_type in ['ES_1D']:
-        splits = ['train','validation','test']
-        shuffle = {'train':True,'validation':False,'test':False}
+        splits = ['whole_train','train','validation','test']
+        shuffle = {'whole_train':False,'train':True,'validation':False,'test':False}
         dataset = {}
         
         df = pd.read_csv(f'./data/{opt.dataset}.csv')
         df = df.iloc[:,:opt.isize+1]
 
         dataset['train'] = ES_1D_single_param_Dataset( df.loc[(df['parameter']<max(opt.training_reg))&(df['parameter']>min(opt.training_reg))] )
+        dataset['whole_train'] = dataset['train']
         dataset['validation'] = ES_1D_single_param_Dataset( df.loc[(df['parameter']<max(opt.validation_reg))&(df['parameter']>min(opt.validation_reg))] )
         dataset['test'] = ES_1D_single_param_Dataset( df )
-        b_size = {'train':opt.batchsize,'validation':len(dataset['validation']),'test':len(dataset['test'])}
+        b_size = {'whole_train':len(dataset['train']),'train':opt.batchsize,'validation':len(dataset['validation']),'test':len(dataset['test'])}
 
         dataloader = {x: torch.utils.data.DataLoader(dataset=dataset[x],
                                                      batch_size=b_size[x],
@@ -55,4 +56,5 @@ def load_data(opt):
                                                      #worker_init_fn=(None if opt.manualseed == -1
                                                      #else lambda x: np.random.seed(opt.manualseed)))
                       for x in splits}
+        print(f'>> Loaded ./data/{opt.dataset}.csv')
         return dataloader

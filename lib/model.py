@@ -10,7 +10,6 @@ import torch.optim as optim
 import torch.nn as nn
 import torch.utils.data
 import numpy as np
-from lib.visualizer import Visualizer
 import wandb
 import pandas as pd
 
@@ -25,10 +24,12 @@ class BaseModel():
         self.trn_dir = os.path.join(self.opt.outf, self.opt.name, 'train')
         self.tst_dir = os.path.join(self.opt.outf, self.opt.name, 'test')
         self.device = torch.device("cuda:0" if self.opt.device != 'cpu' else "cpu")
+        self.losses = {}
         # Initialize wandb logger
-        ### to be changed
         if (self.opt.isTrain):
-            wandb.init(project='gan', entity='cerbero94', config=opt)
+            wandb.init(project=opt.wandb_proj, entity=opt.wandb_account, config=opt)
+            wandb.run.name = opt.name
+            wandb.run.save()
 
     def set_input(self, input:torch.Tensor):
         """ Set input
@@ -39,8 +40,6 @@ class BaseModel():
         with torch.no_grad():
             self.input = input
     
-    ### TODO: I think this should go in the specific model, or better it should only report self.losses which is an ordered dictionary
-    ### containing all the losses below.
     ##
     def get_losses(self):
         """ Reports the losses of the model.
@@ -52,17 +51,17 @@ class BaseModel():
         return self.losses
 
     ##
-    def get_img(self):
-        """ Returns current img (input and reconstruted features).
+    # def get_img(self):
+    #     """ Returns current img (input and reconstruted features).
 
-        Returns:
-            [reals, fakes]
-        """
+    #     Returns:
+    #         [reals, fakes]
+    #     """
 
-        reals = self.input.data
-        fakes = self.fake.data
+    #     reals = self.input.data
+    #     fakes = self.fake.data
 
-        return reals, fakes
+    #     return reals, fakes
 
     ##
     def save_weights(self, epoch):
@@ -75,9 +74,11 @@ class BaseModel():
         weight_dir = os.path.join(self.opt.outf, self.opt.name, 'train', 'weights')
         if not os.path.exists(weight_dir): os.makedirs(weight_dir)
 
-        torch.save({'epoch': epoch + 1, 'state_dict': self.netg.state_dict()},
+        ## together with the weigths and the epoch, also the training and validation windows parameters are stored
+        training_configuration = {'training_reg':self.opt.training_reg,'validation_reg':self.opt.validation_reg}
+        torch.save({'epoch': epoch + 1, 'state_dict': self.netg.state_dict(), 'training_conf': training_configuration},
                    '%s/netG.pt' % (weight_dir))
-        torch.save({'epoch': epoch + 1, 'state_dict': self.netd.state_dict()},
+        torch.save({'epoch': epoch + 1, 'state_dict': self.netg.state_dict(), 'training_conf': training_configuration},
                    '%s/netD.pt' % (weight_dir))
 
     ##
@@ -86,9 +87,12 @@ class BaseModel():
         """
 
         weight_dir = os.path.join(self.opt.outf, self.opt.name, 'train', 'weights','netG.pt')
-        # if not os.path.exists(weight_dir): os.makedirs(weight_dir)
-        pretrained_dict = torch.load(weight_dir)#['state_dict']
-        
+        pretrained_dict = torch.load(weight_dir)['state_dict']
+        training_configuration = torch.load(weight_dir)['training_conf']
+        self.opt.training_reg = training_configuration['training_reg']
+        self.opt.validation_reg = training_configuration['validation_reg']
+        self.opt.iter = torch.load(weight_dir)['epoch']
+
         try:
             self.netg.load_state_dict(pretrained_dict)
         except IOError:
@@ -112,6 +116,7 @@ class BaseModel():
             self.set_input(batch_input_features)
             self.optimize_params()
 
+            ### TODO: to be done in the following
             # if self.total_steps % self.opt.print_freq == 0:
                 
             # if self.total_steps % self.opt.save_image_freq == 0:
@@ -120,21 +125,22 @@ class BaseModel():
             #     if self.opt.display:
             #         self.visualizer.display_current_images(reals, fakes)
         
+        ## TODO: must be defined before
         # Update the scheduler
         self.scheduler_G.step()
         self.scheduler_D.step()
         # Validate each epoch
         self.validate()
 
-        if self.opt.display:
-            errors = self.get_losses()
-            self.losses.update({'lr_G':self.optimizer_G.state_dict()['param_groups'][0]['lr'],\
-                                'lr_D':self.optimizer_D.state_dict()['param_groups'][0]['lr']})
-            wandb.log(errors)
+        errors = self.get_losses()
+        self.losses.update({'lr_G':self.optimizer_G.state_dict()['param_groups'][0]['lr'],\
+                            'lr_D':self.optimizer_D.state_dict()['param_groups'][0]['lr']})
+        wandb.log(errors)
         print(">> Training model %s. Epoch %d/%d" % (self.name, self.epoch+1, self.opt.niter))
         # self.visualizer.print_current_errors(self.epoch, errors)
 
     ##
+    ### TODO: use display to be verbose on the screen with ongoing training performances
     def train(self):
         """ Train the model
         """
@@ -173,39 +179,30 @@ class BaseModel():
 
         self.losses.update({'loss_G_val':val_loss.item()})
 
+    ##
     def test(self):
         """ Evaluate GAN model on the whole test dataset.
         """
         
         self.opt.phase = 'test'
-
-        if(not self.opt.isTrain):
-            self.load_weights()
         
         ### TODO: this depends on the model actually!!! For models with 2 control variables it does not work. 
-        ### maybe must migrate in the specific model and not the GAN generic one
+        ### maybe must migrate in the specific model and not the GAN generic one (like model specific method)
         import matplotlib.pyplot as plt
         X_test = torch.stack([v["es"] for v in next(iter(self.dataloader['test']))])
-        X_train = torch.stack([v["es"] for v in next(iter(self.dataloader['train']))])
+        X_train = torch.stack([v["es"] for v in next(iter(self.dataloader['whole_train']))])
         X_validation = torch.stack([v["es"] for v in next(iter(self.dataloader['validation']))])
-        # print(X_test.size())
-        # print(X_train.size())
-        # print(len([v["parameter"] for v in next(iter(self.dataloader['test']))]))
+
         with torch.no_grad():
             X_hat_test = self.netg(X_test)
             X_hat_train = self.netg(X_train)
             X_hat_validation = self.netg(X_validation)
-            # TODO: not exactly right: it should be the error on the whole training set and not on a random batch
             test_loss = 100*l2_loss_batch(X_test,X_hat_test)
-            noise_loss = 100*l2_loss_batch(X_train,X_hat_train)
-            noise_loss_mean = np.mean(noise_loss)
-            noise_loss_sum = np.sum(noise_loss)
-            loss_validation_sum = np.sum(100*l2_loss_batch(X_validation,X_hat_validation))
-        print(f'>> Training loss: {noise_loss_sum} %\t Validation loss: {loss_validation_sum} %')
+            noise_loss_mean = 100*l2_loss(X_train,X_hat_train).item()
+            loss_validation_mean = 100*l2_loss(X_validation,X_hat_validation).item()
+        print(f'>> Training loss: {noise_loss_mean} %\t Validation loss: {loss_validation_mean} %')
         parameter = [v["parameter"] for v in next(iter(self.dataloader['test']))]
 
-        # if(self.opt.isTrain):
-            # export anomaly detection results
         plt.figure(figsize=(8,6))
         plt.xticks(fontsize=21)
         plt.yticks(fontsize=21)
@@ -213,7 +210,7 @@ class BaseModel():
         plt.plot(parameter,test_loss-noise_loss_mean,'o-',ms=4,color='#E57439')
         plt.grid()
         plt.axvspan(min(self.opt.training_reg), max(self.opt.training_reg), facecolor='yellow', alpha=0.15)
-        plt.axvspan(min(self.opt.validation_reg), min(self.opt.validation_reg), facecolor='green', alpha=0.15)
+        plt.axvspan(min(self.opt.validation_reg), max(self.opt.validation_reg), facecolor='green', alpha=0.15)
 
         plot_dir = os.path.join(self.opt.outf, self.opt.name, 'test')
         if not os.path.exists(plot_dir): os.makedirs(plot_dir)
@@ -224,9 +221,10 @@ class BaseModel():
         performance.to_csv('%s/loss_anomaly_detection.csv' % (plot_dir))
         print(f">> Evaluation of model {self.opt.name}.[Done]")
         print(f">> results exported to {plot_dir}/loss_anomaly_detection.csv")
-        # else:
-        #     return parameter, test_loss-noise_loss
-   
+
+        if self.opt.display:
+            plt.show()
+
         ### TODO: export a summary of the performances as in wandb (maybe taking from the history)
 
 ##
@@ -327,7 +325,8 @@ class GAN_ES_1D(BaseModel):
         self.errD = self.err_d_real + self.err_d_fake
         self.D_x = self.pred_real.mean().item()
         self.D_G_z1 = self.pred_fake.mean().item()
-
+    
+    ##
     def update_losses(self):
         self.losses = OrderedDict([
             ('loss_D',self.errD.item()), 
@@ -337,6 +336,7 @@ class GAN_ES_1D(BaseModel):
             ('D_G_z1',self.D_G_z1), 
             ('D_G_z2',self.D_G_z2)])
     
+    ##
     def optimize_params(self):
         """ Forwardpass, Loss Computation and Backwardpass.
         """
