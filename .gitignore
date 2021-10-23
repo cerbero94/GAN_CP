@@ -1,0 +1,13 @@
+*__pycache__
+*.py[cod]
+*wandb
+output/diff_training*
+output/gan_es*
+*.DS_store
+plotter_diff_train.py
+KLdivergence.py
+output/prova*
+output/paper/**/*.csv
+output/paper/**/*.png
+output/paper/**/*.txt
+
