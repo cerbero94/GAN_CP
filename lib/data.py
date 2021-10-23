@@ -40,7 +40,6 @@ def load_data(opt):
         
         df = pd.read_csv(f'./data/{opt.dataset}.csv')
         df = df.iloc[:,:opt.isize+1]
-
         dataset['train'] = ES_1D_single_param_Dataset( df.loc[(df['parameter']<max(opt.training_reg))&(df['parameter']>min(opt.training_reg))] )
         dataset['whole_train'] = dataset['train']
         dataset['validation'] = ES_1D_single_param_Dataset( df.loc[(df['parameter']<max(opt.validation_reg))&(df['parameter']>min(opt.validation_reg))] )
@@ -48,13 +47,14 @@ def load_data(opt):
         b_size = {'whole_train':len(dataset['train']),'train':opt.batchsize,'validation':len(dataset['validation']),'test':len(dataset['test'])}
 
         dataloader = {x: torch.utils.data.DataLoader(dataset=dataset[x],
-                                                     batch_size=b_size[x],
-                                                     shuffle=shuffle[x],
-                                                     collate_fn=custom_collate)
-                                                     #num_workers=int(opt.workers),
-                                                     #drop_last=drop_last_batch[x],
-                                                     #worker_init_fn=(None if opt.manualseed == -1
-                                                     #else lambda x: np.random.seed(opt.manualseed)))
-                      for x in splits}
+                                                    batch_size=b_size[x],
+                                                    shuffle=shuffle[x],
+                                                    collate_fn=custom_collate)
+                                                    #num_workers=int(opt.workers),
+                                                    #drop_last=drop_last_batch[x],
+                                                    #worker_init_fn=(None if opt.manualseed == -1
+                                                    #else lambda x: np.random.seed(opt.manualseed)))
+                    for x in splits}
+
         print(f'>> Loaded ./data/{opt.dataset}.csv')
         return dataloader

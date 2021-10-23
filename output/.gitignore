@@ -1,0 +1,11 @@
+*__pycache__
+*.py[cod]
+*wandb
+diff_training*
+gan_es*
+*.DS_store
+prova*
+*.csv
+*.png
+*.txt
+
