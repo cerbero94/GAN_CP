@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import rc
+from matplotlib import cm
 rc('text', usetex=True)
 plt.rc('font', family='serif')
 
@@ -15,8 +16,6 @@ loss100 = pd.read_csv('./output/paper/XXZ_100_BKT/test/loss_anomaly_detection.cs
 loss160 = pd.read_csv('./output/paper/XXZ_160_BKT/test/loss_anomaly_detection.csv')
 loss200 = pd.read_csv('./output/paper/XXZ_200_BKT/test/loss_anomaly_detection.csv')
 loss400 = pd.read_csv('./output/paper/XXZ_400_BKT/test/loss_anomaly_detection.csv')
-
-from matplotlib import cm
 
 plt.figure(1,figsize=(8,6))
 plt.xlim([-1.7,0])
@@ -94,4 +93,3 @@ plt.gcf().text(0.05, 0.85, '$(c)$', fontsize=22)
 plt.text(-0.05,18,'\\textbf{TRAINING SET}',ha='center',va='center',fontsize='18',color='#FF8000',rotation=90)
 plt.text(-0.125,18,'\\textbf{VALIDATION SET}',ha='center',va='center',fontsize='18',color='#007000',rotation=90)
 plt.show() 
-# %%

@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # Run an experiment: follow the example below. The complete list of arguments can be found in options.py
-# python train.py --model gan_es_1d  --dataset XXZ_200_BKT_new  --training_reg 0 -0.65  --validation_reg -0.65 -0.8 --wandb_proj gan --wandb_account cerbero94  --val_thr 5e-3 --tr_thr 5e-4 --niter 400 --G_lr 1e-3 --D_lr 1e-5 
+# python train.py --model gan_es_1d  --dataset XXZ_200_BKT --name proveXXZ --training_reg 0 -0.65  --validation_reg -0.65 -0.8 --wandb_proj <your_project> --wandb_account <your_account>  --val_thr 5e-3 --tr_thr 5e-3 --niter 500 --G_lr 1e-2 --D_lr 1e-3 --Lambda 1 --Epsilon 10
+# python train.py --model gan_es_1d  --dataset XXZ_100_BKT --name proveXXZ --training_reg 0 -0.65  --validation_reg -0.65 -0.8 --wandb_proj <your_project> --wandb_account <your_account>  --val_thr 5e-3 --tr_thr 5e-3 --niter 500 --G_lr 1e-2 --D_lr 1e-4 --Lambda 1 --Epsilon 10
+# python train.py --model gan_es_1d  --dataset XXZ_160_BKT --name proveXXZ --training_reg 0 -0.65  --validation_reg -0.65 -0.8 --wandb_proj <your_project> --wandb_account <your_account>  --val_thr 3e-3 --tr_thr 4e-3 --niter 500 --G_lr 1e-2 --D_lr 1e-4 --Lambda 1 --Epsilon 10
+# python train.py --model gan_es_1d  --dataset XXZ_400_BKT --name proveXXZ --training_reg 0 -0.65  --validation_reg -0.65 -0.8 --wandb_proj <your_project> --wandb_account <your_account>  --val_thr 3e-3 --tr_thr 4e-3 --niter 500 --G_lr 1e-2 --D_lr 1e-4 --Lambda 1 --Epsilon 10
 
 # Evaluate the paper's models and plot the results
 python evaluate.py --dataset XXZ_100_BKT --isize 64 --name paper

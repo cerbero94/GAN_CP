@@ -158,7 +158,6 @@ class BaseModel():
         for self.epoch in range(self.opt.iter, self.opt.niter):
             # Train for one epoch
             self.train_one_epoch()
-
             if(self.losses['loss_G_val']<self.opt.val_thr and self.losses['loss_G_G_tr']<self.opt.tr_thr):
                 print('>> Target thresholds for losses achieved:')
                 print('Training reconstruction loss : %1.5f\tValidation reconstruction loss : %1.5f'\
@@ -303,10 +302,10 @@ class GAN_ES_1D(BaseModel):
         self.D_G_z2 = self.netd(self.reconstruction).mean().item()
         self.err_g_adv = self.l_adv(self.netd(self.reconstruction), real)
         self.err_g_rec = self.l_rec(self.input, self.reconstruction)
-        self.errG_D = self.err_g_adv * self.opt.Lambda
-        self.errG_G = self.err_g_rec * self.opt.Epsilon
-        self.err_g = self.errG_D + \
-                     self.errG_G 
+        self.errG_D = self.err_g_adv
+        self.errG_G = self.err_g_rec
+        self.err_g = self.errG_D * self.opt.Lambda + \
+                     self.errG_G * self.opt.Epsilon
         self.err_g.backward(retain_graph=True)
          
 
